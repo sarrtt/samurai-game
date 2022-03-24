@@ -1,0 +1,38 @@
+64 12 64 64
+// The first line should contain the width and height of the
+// map and the width and height of each tile. A list of character to
+// tile mappings is then provided where each character is preceded by a
+// # character. The dot character always defaults to a blank space 
+// Note that the referenced files should be in the same directory as the
+// tile map.
+#a=rm_carpet.png
+#l=rm_frame_L.png
+#L=rm_frame_Lb.png
+#c=rm_frame_Lc.png
+#r=rm_frame_R.png
+#R=rm_frame_Rb.png
+#C=rm_frame_Rc.png
+#T=rm_frame_top.png
+#h=rm_handrail.png
+#k=rm_skirting.png
+#w=rm_wallpaper.png
+#g=grass.png
+#t=rm_tiles.png
+#E=rm_rend.png
+#d=rm_doorway.png
+// The actual tile map is preceded by the #map line
+#map
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwE...r........................
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww...r........................
+wwcTTTCwwcTTTCwwwwcTTTCwwcTTTCwwwwww...r........................
+wwl...rwwl...rwwwwl...rwwl...rwwwwwEhhhR........................
+wwl...rwwl...rwwwwl...rwwl...rwwwkkETTTC........................
+wwl...rwwl...rwwwwl...rwwl...rwwwwwE...r........................
+wwl...rwwl...rwwwwl...rwwl...rwwwwwE...r........................
+wwl...rwwl...rwwwwl...rwwl...rwwwwww...r........................
+wwl...rwwl...rwwwwl...rwwl...rwwwwww...r........................
+kkLhhhRkkLhhhRkkkkLhhhRkkLhhhRkkkkkkhhhR........................
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggg
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggg
+
+

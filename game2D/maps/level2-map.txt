@@ -1,0 +1,20 @@
+10 5 64 32
+// The first line should contain the width and height of the
+// map and the width and height of each tile. A list of character to
+// tile mappings is then provided where each character is preceded by a
+// # character. The dot character always defaults to a blank space 
+// Note that the referenced files should be in the same directory as the
+// tile map.
+#b=orangeblock.png
+#c=greencircle.png
+#g=glasses.png
+// The actual tile map is preceded by the #map line
+#map
+bbbbbbbbbb
+b........b
+b..g.....b
+bccccccccb
+bbbbbbbbbb
+
+
+
