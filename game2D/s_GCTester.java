@@ -54,6 +54,7 @@ public class s_GCTester extends GameCore {
 	Animation legs_anim;
 	Animation chand_anim;
 	Animation chandTop_anim;
+	Animation arch_anim;
 
 	// Player
 	Sprite torso_spr;
@@ -62,7 +63,7 @@ public class s_GCTester extends GameCore {
 	Sprite legs_spr;
 
 	// NPCs
-	Sprite chas_spr;
+	Enemy chas_spr;
 	
 	// Objects
 	Sprite piano_spr;
@@ -72,29 +73,69 @@ public class s_GCTester extends GameCore {
 	Sprite chandTop1_spr;
 	Sprite chandTop2_spr;
 	Sprite chandTop3_spr;
+	Sprite arch_spr;
 
-	TileMap foreground = new TileMap();
-	TileMap background = new TileMap();
-
-
-
-	// Belong in different classes
-	int enemyMovement = 0;
+	TileMap rokumeikan = new TileMap();
 
 
 
 	public static void main(String[] args) {
 		s_GCTester gct = new s_GCTester();
 		gct.init();
+		gct.level1();
 		gct.run(false,1024,768);
+		//gct.gameLoop();
 	}
 	
 
 
 	public void init() {
+		// Enemies
+		Image chas_img = loadImage("images/rifleman.png");
+		Image chascrouch_img = loadImage("images/rman_crouch.png");
+		Animation chas_anim = new Animation();
+		chas_anim.addFrame(chas_img, 200);
+		chas_spr = new Enemy (chas_anim);
+		
+
+
+		// Player
+		Image torso_img = loadImage("images/torso.png");
+		Animation torso_anim = new Animation();
+		torso_anim.addFrame(torso_img, 200);
+		torso_spr = new Sprite(torso_anim);
+		
+		Image larm_img = loadImage("images/larm.png");
+		Animation larm_anim = new Animation();
+		larm_anim.addFrame(larm_img, 200);
+		larm_spr = new Sprite(larm_anim);
+		
+		Image rarm_img = loadImage("images/rarm.png");
+		Animation rarm_anim = new Animation();
+		rarm_anim.addFrame(rarm_img, 200);
+		rarm_spr = new Sprite(rarm_anim);
+		
+		Image run1_img = loadImage("images/run1.png");
+		Image run2_img = loadImage("images/run2.png");
+		Image run3_img = loadImage("images/run3.png");
+		Image run4_img = loadImage("images/run4.png");
+		Animation legs_anim = new Animation();
+		legs_anim.setLoop(true);
+		legs_anim.addFrame(run1_img, 200);
+		legs_anim.addFrame(run2_img, 200);
+		legs_anim.addFrame(run3_img, 200);
+		legs_anim.addFrame(run4_img, 200);
+		//legs_anim.play();
+		legs_spr = new Sprite(legs_anim);
+	//	legs_anim.start();
+    	}
+
+
+
+	public void level1() {
 		// Loading images and maps.
 		bg = new ImageIcon("images/shinhanga.jpg").getImage();	
-		foreground.loadMap("maps", "1880s.txt");
+		rokumeikan.loadMap("maps", "rokumeikan.txt");
 
 
 
@@ -121,45 +162,16 @@ public class s_GCTester extends GameCore {
 		chandTop_anim.addFrame(chandTop_img, 200);
 		chandTop1_spr = new Sprite(chandTop_anim);	chandTop1_spr.setX(chand1_left + BLOCK);	chandTop1_spr.setY(0);
 		chandTop2_spr = new Sprite(chandTop_anim);	chandTop2_spr.setX(chand2_left + BLOCK);	chandTop2_spr.setY(0);
-		chandTop3_spr = new Sprite(chandTop_anim);	chandTop3_spr.setX(chand3_left + BLOCK);	chandTop3_spr.setY(0);
+		chandTop3_spr = new Sprite(chandTop_anim);	chandTop3_spr.setX(chand3_left + BLOCK);	chandTop3_spr.setY(0);	
 		
 		
 		
-		// Enemies
-		Image chas_img = loadImage("images/rifleman.png");
-		Animation chas_anim = new Animation();
-		chas_anim.addFrame(chas_img, 200);
-		chas_spr = new Sprite(chas_anim);
-		
-
-
-		// Player
-		Image torso_img = loadImage("images/torso.png");
-		Animation torso_anim = new Animation();
-		torso_anim.addFrame(torso_img, 200);
-		torso_spr = new Sprite(torso_anim);
-		
-		Image larm_img = loadImage("images/larm.png");
-		Animation larm_anim = new Animation();
-		larm_anim.addFrame(larm_img, 200);
-		larm_spr = new Sprite(larm_anim);
-		
-		Image rarm_img = loadImage("images/rarm.png");
-		Animation rarm_anim = new Animation();
-		rarm_anim.addFrame(rarm_img, 200);
-		rarm_spr = new Sprite(rarm_anim);
-		
-		Image run1_img = loadImage("images/run1.png");
-		Image run2_img = loadImage("images/run2.png");
-		Image run3_img = loadImage("images/run3.png");
-		Image run4_img = loadImage("images/run4.png");
-		Animation legs_anim = new Animation();
-		legs_anim.addFrame(run1_img, 200);
-		legs_anim.addFrame(run2_img, 200);
-		legs_anim.addFrame(run3_img, 200);
-		legs_anim.addFrame(run4_img, 200);
-		legs_spr = new Sprite(legs_anim);
-    	}
+		// Misc objects
+		Image arch_img = loadImage("images/arch.png");
+		Animation arch_anim = new Animation();
+		arch_anim.addFrame(arch_img, 200);
+		arch_spr = new Sprite(arch_anim);	arch_spr.setX(BLOCK * 52);	
+	}
 
 
 
@@ -169,7 +181,7 @@ public class s_GCTester extends GameCore {
 		g.fillRect(0,0,getWidth(),getHeight());
 		g.drawImage(bg,(-xPos / 32),0,null);
 		
-		foreground.draw(g,-xPos,0);
+		rokumeikan.draw(g,-xPos,0);
 		g.fillRect((-xPos - 8),0,8,getHeight());
 		
 
@@ -188,17 +200,22 @@ public class s_GCTester extends GameCore {
 		g.drawImage(chandTop1_spr.getImage(), chand1_left - xPos + BLOCK, 0, null);
 		g.drawImage(chandTop2_spr.getImage(), chand2_left - xPos + BLOCK, 0, null);
 		g.drawImage(chandTop3_spr.getImage(), chand3_left - xPos + BLOCK, 0, null);
+		
+		
+		
+		// Misc objects
+		g.drawImage(arch_spr.getImage(), BLOCK * 52 - xPos, SIX_BLOCKS, null);
+		
 
 
 		// Enemies
-		g.drawImage(chas_spr.getImage(), (1537 - xPos + enemyMovement), TWO_BLOCKS, null);
+		g.drawImage(chas_spr.getImage(), 1537 - xPos + (int) chas_spr.getX(), TWO_BLOCKS, null);
 		
 
 
 		// Player
 		g.drawImage(torso_spr.getImage(), indent, (yPos - 128), null);
-		g.drawImage(legs_spr.getImage(), indent, (yPos - 64), null);
-//		legs_anim.start();
+		if (goRight) g.drawImage(legs_spr.getImage(), indent, (yPos - 64), null);
 		if (attackl) g.drawImage(larm_spr.getImage(), (indent - 128), (yPos - 128), null);
 		if (attackr) g.drawImage(rarm_spr.getImage(), (indent + 64), (yPos - 128), null);
 	}
@@ -208,31 +225,30 @@ public class s_GCTester extends GameCore {
 	public void update(long elapsed) {
 		elapsed++;
 
-		//TODO get the legs animation working
-		//legs_anim.update(elapsed);
-		
 
 
 		// Walking and running
 		if (indent <= 8) mayGoLeft = false;
+		if (indent >= rokumeikan.getPixelWidth()) mayGoRight = false;
 		if (mayGoLeft) {
-			if (xPos >= 0) {
-				if (goLeft && !run) 	xPos = xPos - WALK_SPEED;
-				if (goLeft && run) 	xPos = xPos - RUN_SPEED;
-			} else {
+
+			if ((xPos < 0) || (indent > THREE_BLOCKS)) {
 				if (goLeft && !run) 	indent = indent - WALK_SPEED;
 				if (goLeft && run) 	indent = indent - RUN_SPEED;
+			} else {
+				if (goLeft && !run) 	xPos = xPos - WALK_SPEED;
+				if (goLeft && run) 	xPos = xPos - RUN_SPEED;
 			}
 		}
 		
 		if (mayGoRight) {
-			if (indent >= THREE_BLOCKS) {
-				if (goRight && !run) 	xPos = xPos + WALK_SPEED;
-				if (goRight && run) 	xPos = xPos + RUN_SPEED;
-			} else {
+			if ((indent < THREE_BLOCKS) || (xPos >= rokumeikan.getPixelWidth() - 1024)) {
 				if (goRight && !run)	indent = indent + WALK_SPEED;
 				if (goRight && run)	indent = indent + RUN_SPEED;
-			}
+			} else {
+				if (goRight && !run) 	xPos = xPos + WALK_SPEED;
+				if (goRight && run) 	xPos = xPos + RUN_SPEED;
+			}	
 		}
 
 
@@ -253,13 +269,7 @@ public class s_GCTester extends GameCore {
 
 
 		// Combat
-		
-		if ((int) chas_spr.getX() > (xPos + 200)) {
-			enemyMovement += 3;
-		}
-		if ((int) chas_spr.getX() < (xPos - 200)) {
-			enemyMovement -= 3;
-		}
+		chas_spr.attackChassepot(indent, xPos, yPos);
 
 
 
@@ -269,7 +279,8 @@ public class s_GCTester extends GameCore {
 			mayDescend = false;
 		}
 		
-		if (xPos < 48 * BLOCK) {
+		// Only check for collisions within a certain distance of the player.
+		if (xPos < 48 * BLOCK) { 
 			collision(piano_spr);
 			collision(chand1_spr);
 			collision(chand2_spr);
@@ -363,7 +374,7 @@ public class s_GCTester extends GameCore {
 			yPos = top;
 			mayDescend = false;
 		} else if ((inX) && (inY)) {
-			jump_dx = 0;
+			//jump_dx = 0;
 			int distL = xPos - left;
 			int distR = right - xPos;
 			int distT = yPos - top;
@@ -379,6 +390,7 @@ public class s_GCTester extends GameCore {
 				mayGoLeft = false;
 			} else if ((distT < distL) && (distT < distR) && (distT < distB)) {
 				yPos = top;
+				jump_dx = 0;
 				mayDescend = false;
 			} else if ((distB < distL) && (distB < distR) && (distB < distT)) {
 				yPos = bottom;
@@ -386,15 +398,15 @@ public class s_GCTester extends GameCore {
 			}
 		}
 
+		if (inX && ((xPos <= left + 10) || (xPos >= right - 10))) mayDescend = true;
+
 		// Missing the object
 		if (xPos < left    || !inY) mayGoRight = true;
 		if (xPos > right   || !inY) mayGoLeft = true;
 		if (yPos < top    || !inX) mayDescend = true;
 		if (yPos > bottom || !inX) mayAscend = true;
 		
-		if (!inY) {
-			floor = ZERO_BLOCKS;
-		}
+		if (!inY) floor = ZERO_BLOCKS;
 	}
 
 
