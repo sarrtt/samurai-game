@@ -12,7 +12,7 @@ import java.awt.geom.*;
  */
 public class Sprite {
 
-    // The current Animation to use for this sprite
+	// The current Animation to use for this sprite
     private Animation anim;		
 
     // Position (pixels)
@@ -29,7 +29,9 @@ public class Sprite {
     private float radius;
 
     // The scale to draw the sprite at where 1 equals normal size
-    private double scale;
+    private double xscale;
+    private double yscale;
+    
     // The rotation to apply to the sprite image
     private double rotation;
 
@@ -47,10 +49,12 @@ public class Sprite {
      * @param a The animation to use for the sprite.
      * 
      */
-    public Sprite(Animation anim) {
+    public Sprite(Animation anim) 
+    {
         this.anim = anim;
         render = true;
-        scale = 1.0f;
+        xscale = 1.0f;
+        yscale = 1.0f;
         rotation = 0.0f;
     }
 
@@ -133,13 +137,14 @@ public class Sprite {
         
         @param The time that has elapsed since the last call to update
     */
-    public void update(long elapsedTime) {
+    public void update(long elapsedTime) 
+    {
     	if (!render) return;
         x += dx * elapsedTime;
         y += dy * elapsedTime;
         anim.update(elapsedTime);
-        width = anim.getImage().getWidth(null);
-        height = anim.getImage().getHeight(null);
+        width = getWidth();
+        height = getHeight();
         if (width > height)
         	radius = width / 2.0f;
         else
@@ -149,29 +154,33 @@ public class Sprite {
     /**
         Gets this Sprite's current x position.
     */
-    public float getX() {
-        return x;
+    public float getX() 
+    {
+    	return x;
     }
 
     /**
         Gets this Sprite's current y position.
     */
-    public float getY() {
-        return y;
+    public float getY() 
+    {
+    	return y;
     }
 
     /**
         Sets this Sprite's current x position.
     */
-    public void setX(float x) {
-        this.x = x;
+    public void setX(float x) 
+    {
+    	this.x = x;
     }
 
     /**
         Sets this Sprite's current y position.
     */
-    public void setY(float y) {
-        this.y = y;
+    public void setY(float y) 
+    {
+    	this.y = y;
     }
 
     /**
@@ -179,8 +188,8 @@ public class Sprite {
 	*/
 	public void setPosition(float x, float y) 
 	{
-	    this.x = x;
-	    this.y = y;
+	    setX(x);
+	    setY(y);
 	}
 
     public void shiftX(float shift)
@@ -197,16 +206,18 @@ public class Sprite {
         Gets this Sprite's width, based on the size of the
         current image.
     */
-    public int getWidth() {
-        return anim.getImage().getWidth(null);
+    public int getWidth() 
+    {
+        return (int)(anim.getImage().getWidth(null)*Math.abs(xscale));
     }
 
     /**
         Gets this Sprite's height, based on the size of the
         current image.
     */
-    public int getHeight() {
-        return anim.getImage().getHeight(null);
+    public int getHeight() 
+    {
+        return (int)(anim.getImage().getHeight(null)*Math.abs(yscale));
     }
 
     /**
@@ -221,7 +232,8 @@ public class Sprite {
         Gets the horizontal velocity of this Sprite in pixels
         per millisecond.
     */
-    public float getVelocityX() {
+    public float getVelocityX() 
+    {
         return dx;
     }
 
@@ -229,7 +241,8 @@ public class Sprite {
         Gets the vertical velocity of this Sprite in pixels
         per millisecond.
     */
-    public float getVelocityY() {
+    public float getVelocityY() 
+    {
         return dy;
     }
     
@@ -238,7 +251,8 @@ public class Sprite {
         Sets the horizontal velocity of this Sprite in pixels
         per millisecond.
     */
-    public void setVelocityX(float dx) {
+    public void setVelocityX(float dx) 
+    {
         this.dx = dx;
     }
 
@@ -246,7 +260,8 @@ public class Sprite {
         Sets the vertical velocity of this Sprite in pixels
         per millisecond.
     */
-    public void setVelocityY(float dy) {
+    public void setVelocityY(float dy) 
+    {
         this.dy = dy;
     }
 
@@ -254,31 +269,61 @@ public class Sprite {
     	Sets the horizontal and vertical velocity of this Sprite in pixels
     	per millisecond.
 	*/
-	public void setVelocity(float dx, float dy) {
+	public void setVelocity(float dx, float dy) 
+	{
 		this.dx = dx;
 		this.dy = dy;
 	}
 
 	/**
-		Set the scale of the sprite to 's'. If s is 1
-		the sprite will be drawn at normal size. If 's'
-		is 0.5 it will be drawn at half size. Note that
-		scaling and rotation are only applied when
+		Set the x and y scale of the sprite to 'scx' and 'scy' respectively. 
+		If scx and scy are 1, the sprite will be drawn at normal size. If they
+		are 0.5 it will be drawn at half size. If scx is -1, the sprite will be
+		flipped along its vertical axis (it will face left instead of right). 
+		Negative values of scy will flip along the horizontal axis. The flipping
+		and scaling of the sprite are now accounted for when setting a sprite 
+		position and getting its width and height (you will always reference 
+		the top left of the sprite irrespective of the scaling). 
+		Note that scaling and rotation are only applied when
 		using the drawTransformed method.
 	*/
-    public void setScale(float s)
+    public void setScale(float scx, float scy)
     {
-    	scale = s;
+    	xscale = scx;
+    	yscale = scy;
     }
 
 	/**
-		Get the current value of the scaling attribute.
+	Set the scale of the sprite to 's'. If s is 1
+	the sprite will be drawn at normal size. If 's'
+	is 0.5 it will be drawn at half size. Note that
+	scaling and rotation are only applied when
+	using the drawTransformed method.
+	*/
+	public void setScale(float s)
+	{
+		xscale = s;
+		yscale = s;
+	}
+
+    
+	/**
+		Get the current value of the x scaling attribute.
 		See 'setScale' for more information.
 	*/
-    public double getScale()
+    public double getScaleX()
     {
-    	return scale;
+    	return xscale;
     }
+    
+	/**
+	Get the current value of the y scaling attribute.
+	See 'setScale' for more information.
+	 */
+	public double getScaleY()
+	{
+		return yscale;
+	}
 
 	/**
 		Set the rotation angle for the sprite in degrees.
@@ -294,7 +339,7 @@ public class Sprite {
 		Get the current value of the rotation attribute.
 		in degrees. See 'setRotation' for more information.
 	*/
-    public double getRotation()
+    public double getRotation() 
     {
     	return Math.toDegrees(rotation);
     }
@@ -311,7 +356,8 @@ public class Sprite {
     /**
         Gets this Sprite's current image.
     */
-    public Image getImage() {
+    public Image getImage() 
+    {
         return anim.getImage();
     }
 
@@ -326,7 +372,7 @@ public class Sprite {
 
     	g.drawImage(getImage(),(int)x+xoff,(int)y+yoff,null);
     }
-    
+
     /**
 		Draws the bounding box of this sprite using the graphics object 'g' and
 		the currently selected foreground colour.
@@ -352,7 +398,6 @@ public class Sprite {
     	g.drawArc((int)x,(int)y,img.getWidth(null),img.getHeight(null),0, 360);
     }
     
-
 	/**
 		Draws the sprite with the graphics object 'g' at
 		the current x and y co-ordinates with the current scaling
@@ -365,8 +410,16 @@ public class Sprite {
     	if (!render) return;
 
 		AffineTransform transform = new AffineTransform();
-		transform.translate(Math.round(x)+xoff,Math.round(y)+yoff);
-		transform.scale(scale,scale);
+		
+		// Apply scaling to current x and y positions to 
+		// ensure shifted left and up when flipped due to scaling.
+		float shiftx = 0;
+		float shifty = 0;
+		if (xscale < 0) shiftx = getWidth();
+		if (yscale < 0) shifty = getHeight();
+		
+		transform.translate(Math.round(x)+shiftx+xoff,Math.round(y)+shifty+yoff);
+		transform.scale(xscale,yscale);
 		transform.rotate(rotation,getImage().getWidth(null)/2,getImage().getHeight(null)/2);
 		// Apply transform to the image and draw it
 		g.drawImage(getImage(),transform,null);

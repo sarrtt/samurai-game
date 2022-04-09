@@ -30,21 +30,18 @@
 #T=rm_frame_top.png
 #w=rm_wallpaper.png
 #y=rm_balcony.png
-#1=archtopL.png
-#2=archtopM.png
-#3=archtopR.png
 // The actual tile map is preceded by the #map line
 #map
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbBBBrpPqpPqpSSSSSSS..........
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwBBBrbBBbBBbSSSSSSS..........
-wwcTTTCwwcTTTCwwwwcTTTCwwcTTTCwwwwwwBBBrbBBbBBb...Q.............
-wwl...rwwl...rwwwwl...rwwl...rwwwhhwhhhRbHHbHHb...Q.122223......
-wwl...rwwl...rwwwwl...rwwl...rwwwyybyyyCyyyyyyy...Q...........bb
-wwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrpPqpPqp...Q...........bb
-wwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrbBBbBBb...Q...........bb
-wwl...rwwl...rwwwwl...rwwl...rwwwwwwBBBrbBBbBBb...Q...........bb
-wwl...rwwl...rwwwwl...rwwl...rwwwwwwBBBrbBBbBBb...QSS.sss..SS.bb
-kkLhhhRkkLhhhRkkkkLhhhRkkLhhhRkkkkkkhhhRbHHbHHb...QSS.ssssssS.bb
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbBBBrpPqpPqp.SSSSSSSS........
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwBBBBrbBBbBBb.SSSSSSSS........
+wwcTTTCwwcTTTCwwwwcTTTCwwcTTTCwwwwwBBBBrbBBbBBb....Q............
+wwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBRbHHbHHb....Q............
+wwl...rwwl...rwwwwl...rwwl...rwwwTTTyyyCyyyyyyy....Q..........bb
+wwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrpPqpPqp....Q..........bb
+wwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrbBBbBBb....Q..........bb
+wwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBrbBBbBBb....Q..........bb
+wwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBrbBBbBBb..SSQ.......SS.bb
+kkLhhhRkkLhhhRkkkkLhhhRkkLhhhRkkkkkkBBBRbHHbHHb..SSQ.......SS.bb
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggg
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggg
 
