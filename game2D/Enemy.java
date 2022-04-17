@@ -175,22 +175,28 @@ public class Enemy extends Sprite {
 		if (targetY < getY()) return;
 
 		int leftTip = (int) targetX - 128;
-		int leftHilt = (int) targetX - 64;
+		int leftHilt = (int) targetX;
 		int rightTip = (int) targetX + 192;
-		int rightHilt = (int) targetX + 128;
+		int rightHilt = (int) targetX + 64;
 
+		int myleft = (int) getX();
+		int myright = myleft + getWidth();
 
 		if (fromLeft) {
-			int myleft = (int) getX() + 64;
-			int myright = myleft + 64;
+			if (type.equals("rifleman")) {
+				myleft = (int) getX() + 64;
+				myright = myleft + 64;
+			}
 
 			if ((rightTip >= myleft) && (rightHilt <= myleft)) {
 				gotten = true;
 			}
 
 		} else if (fromRight) {
-			int myleft = (int) getX();
-			int myright = myleft + 64;
+			if (type.equals("rifleman")) {
+				myleft = (int) getX();
+				myright = myleft + 64;
+			}
 
 			if ((leftTip <= myright) && (leftHilt >= myright)) {
 				gotten = true;
@@ -198,8 +204,6 @@ public class Enemy extends Sprite {
 		} else gotten = false;
 
 		if (gotten) {
-			
-			System.out.println("gotten");
 			if (type.equals("rifleman")) {
 				setAnimation(gotten_anim);
 				gotten_anim.pause();

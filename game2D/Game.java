@@ -39,7 +39,6 @@ public class Game extends GameCore {
 	final int THREE_BLOCKS 	= 448; // e.g. piano
 	final int TWO_BLOCKS 	= 512; // e.g. people
 	final int ZERO_BLOCKS 	= 640; // e.g. floor
-	int floor = ZERO_BLOCKS;
 
 	// Collisions coping with relative movement
 	int yPos = ZERO_BLOCKS; 	// the bottom of the player character sprite
@@ -47,7 +46,7 @@ public class Game extends GameCore {
 	int c = (indent + 64) * -1;  	// collision factor, or the player's right side
 	int xPos = 0; 			// this is for the other things in the world besides the player!
 	int leftmost;			// protag cannot walk left of this point, or he might get run over by a train
-	int rightmost;			// protag has won by reaching this rightmost point of the stage
+	int rightmost;			// protag wins by reaching this rightmost point of the stage
 
 	// These declarations record the left-hand sides of sprites within the world.
 	// They remain constant; it is the addition of xPos which lets them move around.
@@ -289,10 +288,9 @@ public class Game extends GameCore {
 		lose = false;
 		hp = 4;
 		
-		floor = ZERO_BLOCKS;
-		if (select == 2) floor = TWO_BLOCKS;
 		xPos = 0;
-		yPos = floor;
+		yPos = ZERO_BLOCKS;
+		jump_dx = 0;
 		indent = 448;
 		c = (indent + 64) * -1;
 		
@@ -350,8 +348,7 @@ public class Game extends GameCore {
 		} else if (select == 2) {
 			level = 2;
 
-			floor = TWO_BLOCKS;
-			yPos = floor;
+			yPos = TWO_BLOCKS;
 
 			// Starts the level's soundtrack
 			try { if (!musicPlaying) soundtrack(level); } catch (Exception e) { System.out.println("MIDI error!"); }
@@ -459,7 +456,7 @@ public class Game extends GameCore {
 		// Foregrounds i.e. things to stick your sword into
 		if (level == 1) {	
 			if (!screen_spr.getStatus()) {
-				g.drawImage(screen_spr.getImage(), (int) screen_spr.getX() - xPos, TWO_BLOCKS, null);
+				g.drawImage(screen_spr.getImage(), screen_left - xPos, TWO_BLOCKS, null);
 			}
 			
 			if (!rifleman_spr.getStatus()) {
@@ -510,20 +507,6 @@ public class Game extends GameCore {
 		// Movement
 
 	
-		if ((jump) && (yPos % 64 == 0)) { // Not a safe way of doing things..
-			jump_dx = 40;
-			mayDescend = true;
-		}
-
-		if (mayDescend) {
-			yPos -= jump_dx;
-			torso_spr.shiftY(-jump_dx);
-			larm_spr.shiftY(-jump_dx);
-			rarm_spr.shiftY(-jump_dx);
-			jump_dx -= WEIGHT;
-		} else {
-			jump_dx = 0;
-		}
 		
 		// You can't move when the game is over (primitive cutscenes) and movement works differently on level 0, the single-screen menu.
 		if (!isTheGameOver() && level != 0) {
@@ -577,6 +560,20 @@ public class Game extends GameCore {
 				}
 			}
 	
+			if ((jump) && (yPos % 64 == 0)) { // Not a safe way of doing things..
+				jump_dx = 40;
+				mayDescend = true;
+			}
+	
+			if (mayDescend) {
+				yPos -= jump_dx;
+				torso_spr.shiftY(-jump_dx);
+				larm_spr.shiftY(-jump_dx);
+				rarm_spr.shiftY(-jump_dx);
+				jump_dx -= WEIGHT;
+			} else {
+				jump_dx = 0;
+			}
 		}
 
 		// Movement within the level selection screen is limited.
@@ -629,7 +626,9 @@ public class Game extends GameCore {
 			// Checks for attacks by the player: the player's position and whether the attack was from the left or the right.
 			rifleman_spr.getGot(torso_spr.getX(), (float) yPos, attackl, attackr);
 			rifleman2_spr.getGot(torso_spr.getX(), (float) yPos, attackl, attackr);
-			screen_spr.getGot((float) xPos - c, (float) yPos, attackl, attackr);
+			screen_spr.getGot(xPos + indent, (float) yPos, attackl, attackr);
+			System.out.println("Screen X: " + screen_spr.getX());
+			System.out.println("xPos: " + xPos);
 
 			// Checks for the protag having been attacked.
 			if (rifleman_spr.didYouHitMe()) {
@@ -646,14 +645,6 @@ public class Game extends GameCore {
 
 
 		// Collisions
-		if (yPos > floor) {
-			yPos = floor;
-			torso_spr.setY(floor - (BLOCK * 2));
-			larm_spr.setY(floor - (BLOCK * 2));
-			rarm_spr.setY(floor - (BLOCK * 2));
-			mayDescend = false;
-			jump = false; // allows the player to jump
-		}
 		
 		// No point checking collisions in a different level!
 		if (level == 1) {
@@ -745,8 +736,8 @@ public class Game extends GameCore {
 				mayGoLeft = false;
 			}
 		} else if ((inX) && (yPos == top)) { // landing on top or walking onto the top
-			floor = top;
-			yPos = floor;
+			//floor = top;
+			yPos = top;//floor;
 			jump = false;
 			torso_spr.setY(top - (BLOCK * 2));
 			larm_spr.setY(top - (BLOCK * 2));
@@ -769,8 +760,8 @@ public class Game extends GameCore {
 				xPos = right;
 				mayGoLeft = false;
 			} else if ((distT < distL) && (distT < distR) && (distT < distB)) { // towards the top
-				floor = top;
-				yPos = floor;
+				//floor = top;
+				yPos = top;//floor;
 				jump = false;
 				torso_spr.setY(top - (BLOCK * 2));
 				larm_spr.setY(top - (BLOCK * 2));
@@ -792,7 +783,7 @@ public class Game extends GameCore {
 		}
 
 		if ((xPos <= left + 10) || (xPos >= right - 10)) { // allows for sliding down the edge of the sprite
-			floor = ZERO_BLOCKS;
+			//floor = ZERO_BLOCKS;
 			mayDescend = true;
 		}
 
@@ -823,37 +814,55 @@ public class Game extends GameCore {
 		*/
 	
 
-		// Take a note of a sprite's current position
-	        int sx = xPos - c;
-       		int sy = (int) s.getY(); // top of legs
-     	   
        	 	// Find out how wide and how tall a tile is
-       	 	float tileWidth = tmap.getTileWidth();
+		float tileWidth = tmap.getTileWidth();
        		float tileHeight = tmap.getTileHeight();
        	 
+
+		// Edges of the protag's body
+		int left = (xPos + indent);
+		int bottom = yPos;
+
+		int left_tile = (left / (int) tileWidth);
+		int right_tile = left_tile + 1;
+		int bottom_tile = (bottom / (int) tileHeight);
+		int top_tile = bottom_tile - 2;
+
        	 	// the number of tiles across the axes that the sprite is positioned at 
-        	int xtile = (int)(sx / tileWidth);
-        	int ytile = (int)(sy / tileHeight);
-        	char ch = tmap.getTileChar(xtile, ytile); // which tile is at the top left ?
+        	//int xtile = (int)(sx / tileWidth);
+        	///int ytile = (int)(sy / tileHeight);
+        	
+		char tl = tmap.getTileChar(left_tile, top_tile);
+		char tr = tmap.getTileChar(right_tile, top_tile);
+		char bl = tmap.getTileChar(right_tile, bottom_tile);
+		char br = tmap.getTileChar(right_tile, bottom_tile);
+		//char ch = tmap.getTileChar(xtile, ytile); // which tile is at the top left ?
         
-        
-        	if (ch != '.') {
-			System.out.println("top left");
-		}
+		System.out.println(left + ", " + left_tile + "    " + bottom_tile);
+		System.out.println(bl + " " + br);
+        	
+		if (bl != '.') {
+			yPos = bottom_tile * 64;
+			torso_spr.setY(yPos - (BLOCK * 2));
+			larm_spr.setY(yPos - (BLOCK * 2));
+			rarm_spr.setY(yPos - (BLOCK * 2));
+			mayDescend = false;
+			jump = false;
+		} else mayDescend = true;
         
         	
         	// bottom left
-        	xtile = (int)(sx / tileWidth);
-        	ytile = (int)((sy + s.getHeight())/ tileHeight);
-        	ch = tmap.getTileChar(xtile, ytile);
+        	//xtile = (int)(sx / tileWidth);
+        	//ytile = (int)((sy + s.getHeight())/ tileHeight);
+        	//ch = tmap.getTileChar(xtile, ytile);
         
         	// If it's not empty space
-        	if (ch != '.') 
-        	{
-			System.out.println("bottom left");
-        	}
+        	//if (ch != '.') 
+        	//{
+		//	System.out.println("bottom left");
+        	//}
 
-		if (ch == '.') mayDescend = true;
+		//if (ch == '.') mayDescend = true;
 
    	 }
 
