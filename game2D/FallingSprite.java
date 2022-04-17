@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 
 public class FallingSprite extends Sprite {
 
-	final int WEIGHT = 10;
+	final int WEIGHT = 30;
 	int jump_dx = 0;
 
 	Animation chand_anim;
@@ -57,22 +57,17 @@ public class FallingSprite extends Sprite {
 				gotten = true;
 			}
 		} else gotten = false;
-
-		if (gotten) {
-			while (getY() < 640) {
-				shiftY(jump_dx);
-				jump_dx -= WEIGHT;
-			}
-		}
+		
+		if (gotten) jump_dx = 30;
 	}
 
 
 
-	public void attackKatana() {
-	}
-	
-	
 	public void update(long elapsed) {
+		if (gotten) {
+			shiftY(jump_dx * -1);
+			jump_dx -= WEIGHT;
+		}
 		chand_anim.update(elapsed);
 	}
 

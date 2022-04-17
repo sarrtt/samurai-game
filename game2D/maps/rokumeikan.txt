@@ -1,4 +1,4 @@
-64 12 64 64
+76 12 64 64
 // The first line should contain the width and height of the
 // map and the width and height of each tile. A list of character to
 // tile mappings is then provided where each character is preceded by a
@@ -32,17 +32,17 @@
 #y=rm_balcony.png
 // The actual tile map is preceded by the #map line
 #map
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbBBBrpPqpPqp.SSSSSSSS........
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwBBBBrbBBbBBb.SSSSSSSS........
-wwcTTTCwwcTTTCwwwwcTTTCwwcTTTCwwwwwBBBBrbBBbBBb....Q............
-wwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBRbHHbHHb....Q............
-wwl...rwwl...rwwwwl...rwwl...rwwwTTTyyyCyyyyyyy....Q..........bb
-wwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrpPqpPqp....Q..........bb
-wwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrbBBbBBb....Q..........bb
-wwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBrbBBbBBb....Q..........bb
-wwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBrbBBbBBb..SSQ.......SS.bb
-kkLhhhRkkLhhhRkkkkLhhhRkkLhhhRkkkkkkBBBRbHHbHHb..SSQ.......SS.bb
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggg
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggg
+bwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbBBBrpPqpPqp....SSSSSSSSS...........Q.SSQ
+bwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbBBBrbBBbBBb.....SSSSSSS............Q..SQ
+bwcTTTCwwcTTTCwwwwcTTTCwwcTTTCwwwwwBBBBrbBBbBBb........Q............SSSSS.QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBRbHHbHHb........Q.............SSS..QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwTTTyyyCyyyyyyy........Q......bb......Q...QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrpPqpPqp........Q......bb......Q...QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrbBBbBBb........Q......bb......Q...QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBrbBBbBBb........Q......bb......Q...QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBrbBBbBBb..SS....QSS....bb......Q...QQ
+bkLhhhRkkLhhhRkkkkLhhhRkkLhhhRkkkkkkBBBRbHHbHHb..SS....QSS....bb......Q...QQ
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggggggggggggggg
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggggggggggggggg
 
 

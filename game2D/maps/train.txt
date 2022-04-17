@@ -1,0 +1,46 @@
+76 12 64 64
+// The first line should contain the width and height of the
+// map and the width and height of each tile. A list of character to
+// tile mappings is then provided where each character is preceded by a
+// # character. The dot character always defaults to a blank space 
+// Note that the referenced files should be in the same directory as the
+// tile map.
+#1=train_bigwheel_1.gif
+#2=train_bigwheel_2.gif
+#3=train_bigwheel_3.gif
+#4=train_bigwheel_4.gif
+#b=train_bumper.png
+#c=train_coupler.png
+#d=train_door_up.png
+#D=train_door_down.png
+#e=train_steel_roof.png
+#f=train_floor.png
+#i=train_window.png
+#l=train_planks.png
+#L=train_seats.png
+#p=train_platform.png
+#P=train_panel.png
+#r=train_roof.png
+#R=train_roof_window.png
+#s=train_steel.png
+#t=train_tank_up.png
+#T=train_tank_down.png
+#w=train_wheel.gif
+#x=train_cabin_roof.png
+#X=train_cabin_roof2.png
+#z=train_steam_up.png
+#Z=train_steam_down.png
+// The actual tile map is preceded by the #map line
+#map
+............................................................................
+............................................................................
+............................................................................
+............................................................................
+.....z......................................................................
+.....Z....xXx...............................................................
+.....ttttll.Z.......rrRrRrr.rrRrRrr.rrRrRrr.........eeeeeee.eeeeeee.........
+.....TTTTll.P.PPPPP.dlilild.dlilild.dlilild.........sssssss.sssssss.........
+....bpppp1212.PPPPP.DLLLLLD.DLLLLLD.DLLLLLD.........sssssss.sssssss.........
+.....wwff3434cwwfwwcwwfffwwcwwfffwwcwwfffwwcwwfffwwcwwfffwwcwwfffww.........
+............................................................................
+............................................................................
