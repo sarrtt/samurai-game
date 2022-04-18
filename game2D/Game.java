@@ -24,7 +24,7 @@ public class Game extends GameCore {
 	static int screenHeight = 768;
 
 	int elapsed = 0;
-	int level = 0;
+	int level;
 
 
 	// Positioning
@@ -41,17 +41,16 @@ public class Game extends GameCore {
 	final int ZERO_BLOCKS 	= 640; // e.g. floor
 
 	// Collisions coping with relative movement
-	int yPos = ZERO_BLOCKS; 	// the bottom of the player character sprite
+	float yPos = ZERO_BLOCKS; 	// the bottom of the player character sprite
 	int indent = 448; 		// player's distance from left side of the screen
-	int c = (indent + 64) * -1;  	// collision factor, or the player's right side
-	int xPos = 0; 			// this is for the other things in the world besides the player!
+	int xOff = 0; 			// this is for the other things in the world besides the player!
 	int leftmost;			// protag cannot walk left of this point, or he might get run over by a train
 	int rightmost;			// protag wins by reaching this rightmost point of the stage
 
 	// These declarations record the left-hand sides of sprites within the world.
-	// They remain constant; it is the addition of xPos which lets them move around.
+	// They remain constant; it is the addition of xOff which lets them move around.
 	int piano_left = (BLOCK * 14) + 32;
-	int rifleman1_left = 1537;
+	int rifleman_left = 1537;
 	int rifleman2_left = BLOCK * 58;
 	int screen_left = BLOCK * 34;
 
@@ -65,6 +64,7 @@ public class Game extends GameCore {
 
 
 	// Boolean flags
+	boolean cutscene = true;
 	boolean win = false;
 	boolean lose = false;
 	boolean musicPlaying = false;
@@ -85,11 +85,27 @@ public class Game extends GameCore {
 
 	// Resources
 	
+	// Opening scene
+	Image studio;
+	Image subs_enter;
+	Animation sun1a;
+	Animation sun2a;
+	Sprite sun1;
+	Sprite sun2;
+	double sun1r = 0.1;
+	double sun2r = 0.05;
+	Animation titlea;
+	Sprite title;
+	Animation fadeouta;
+	Sprite fadeout;
+
 	Image bg_ballroom;
 	Image bg_train;
 	Image owari;
 	Image select_ballroom;
 	Image select_train;
+	Image subs_ballroom;
+	Image subs_train;
 	
 	// Characters
 	Animation shife_anim;		// Character's torso at 4 HP,
@@ -110,6 +126,9 @@ public class Game extends GameCore {
 	Enemy rifleman2_spr;
 
 	// Level 1: Ballroom
+	TileMap ballroom_map = new TileMap();	
+	TileMap ballroom_collisions = new TileMap();
+	
 	Animation chand_anim;
 	Animation chandTop_anim;
 	Animation screen_anim;
@@ -117,38 +136,31 @@ public class Game extends GameCore {
 	ArrayList<Sprite> chandelierTops = new ArrayList<Sprite>();
 	Sprite piano_spr;
 
-	TileMap ballroom_map = new TileMap();
-	TileMap ballroom_collisions = new TileMap();
-	
-	// Level 2: Train
+	Image monet;
 
-	TileMap train_map = new TileMap();
-	TileMap tracks_map = new TileMap();
-	TileMap train_collisions = new TileMap();
-
-
-
-	// Token animations for obstacles; collisions need sprites and sprites need animations
-	Animation balcony_anim;
-	Animation wall_anim;
-	Animation wallbig_anim;
 	Animation handrail_anim;
 	Animation branch1_anim;
 	Animation branch2_anim;
-		
-	// Collision obstacles
-	Sprite balcony_spr;
-	Sprite wall1_spr;
-	Sprite wall2_spr;
-	Sprite wall3_spr;
 	Sprite handrail1_spr;
 	Sprite handrail2_spr;
 	Sprite branch1_spr;
 	Sprite branch2_spr;
 	Enemy screen_spr;
+	
+	// Level 2: Train
+	TileMap train_map = new TileMap();
+	TileMap tracks_map = new TileMap();
+	TileMap train_collisions = new TileMap();
+
+	Animation train_steam_anim;
+	Sprite train_steam_spr;
+	Animation train_semaphore_anim;
+	Sprite train_semaphore_spr;
+	
+	boolean semaphore_incident = false;
+
 
 	TileMap thisLevel;
-
 
 
 	public static void main(String[] args) {
@@ -164,11 +176,38 @@ public class Game extends GameCore {
 
 	
 
-
 	public void init_load () {
+		long startLoad = System.currentTimeMillis();
 		System.out.println("Loading...");
 
 		Sprite s;
+
+		// Opening
+		studio = new ImageIcon("images/toho.png").getImage();
+		subs_enter = new ImageIcon("images/subs_enter.png").getImage();
+		
+		titlea = new Animation();
+		titlea.addFrame(loadImage("images/start_title.png"), 200);
+		title = new Sprite(titlea);
+		
+		sun1a = new Animation();
+		sun1a.addFrame(loadImage("images/start_sun1.png"), 200);
+		sun2a = new Animation();
+		sun2a.addFrame(loadImage("images/start_sun2.png"), 200);
+		sun1 = new Sprite(sun1a);
+		sun2 = new Sprite(sun2a);
+
+		fadeouta = new Animation();
+		fadeouta.addFrame(loadImage("images/fade/10.png"), 200);
+		fadeouta.addFrame(loadImage("images/fade/20.png"), 200);
+		fadeouta.addFrame(loadImage("images/fade/30.png"), 200);
+		fadeouta.addFrame(loadImage("images/fade/40.png"), 200);
+		fadeouta.addFrame(loadImage("images/fade/50.png"), 200);
+		fadeouta.addFrame(loadImage("images/fade/70.png"), 200);
+		fadeouta.addFrame(loadImage("images/fade/90.png"), 200);
+		fadeouta.addFrame(loadImage("images/fade/100.png"), 500);
+		fadeout = new Sprite(fadeouta);
+		fadeouta.setLoop(false);
 
 		// Player
 
@@ -207,18 +246,22 @@ public class Game extends GameCore {
 
 
 
-		// Level select menu
-		select_ballroom = new ImageIcon("images/select_ballroom.jpg").getImage();
-		select_train = new ImageIcon("images/select_train.jpg").getImage();
-
-		// Ballroom
-		bg_ballroom = new ImageIcon("images/bg_ballroom.jpg").getImage();	
-		ballroom_map.loadMap("maps", "rokumeikan.txt");
-		ballroom_collisions.loadMap("maps", "lv1col.txt");
-		
 		rifleman_anim = new Animation();
 		rifleman_spr = new Enemy(rifleman_anim, "rifleman");
 		rifleman2_spr = new Enemy(rifleman_anim, "rifleman");
+		
+
+
+		// Level select menu
+		select_ballroom = new ImageIcon("images/select_ballroom.jpg").getImage();
+		select_train = new ImageIcon("images/select_train.jpg").getImage();
+		subs_ballroom = new ImageIcon("images/subs_ballroom.png").getImage();
+		subs_train = new ImageIcon("images/subs_train.png").getImage();
+
+		// Ballroom
+		bg_ballroom = new ImageIcon("images/bg_ballroom.jpg").getImage();	
+		ballroom_map.loadMap("maps", "ballroom.txt");
+		ballroom_collisions.loadMap("maps", "ballroom_collisions.txt");
 
 		Animation chand_anim = new Animation();
 		Animation chandTop_anim = new Animation();
@@ -239,18 +282,6 @@ public class Game extends GameCore {
 		piano_anim.addFrame(loadImage("images/ballroom_piano.png"), 200);
 		piano_spr = new Sprite(piano_anim);
 		
-		Animation balcony_anim = new Animation();
-		balcony_anim.addFrame(loadImage("images/ballroom_balcony.png"), 200);
-		balcony_spr = new Sprite(balcony_anim);
-
-		Animation wall_anim = new Animation();
-		Animation wallbig_anim = new Animation();
-		wall_anim.addFrame(loadImage("images/ballroom_wall.png"), 200);
-		wallbig_anim.addFrame(loadImage("images/ballroom_wall_xl.png"), 200);
-		wall1_spr = new Sprite(wall_anim);
-		wall2_spr = new Sprite(wall_anim);
-		wall3_spr = new Sprite(wallbig_anim);
-
 		Animation handrailin_anim = new Animation();
 		Animation handrailout_anim = new Animation();
 		handrailin_anim.addFrame(loadImage("images/ballroom_handrail_in.png"), 200);
@@ -269,45 +300,58 @@ public class Game extends GameCore {
 		screen_anim = new Animation();
 		screen_spr = new Enemy (screen_anim, "screen");
 
+		monet = new ImageIcon("images/ballroom_monet.png").getImage();
+		
 		// Train
 		bg_train = new ImageIcon("images/bg_train.jpg").getImage();	
 		train_map.loadMap("maps", "train.txt");
-		tracks_map.loadMap("maps", "tracks.txt");
-		train_collisions.loadMap("maps", "lv2col.txt");
+		tracks_map.loadMap("maps", "track.txt");
+		train_collisions.loadMap("maps", "train_collisions.txt");
 
-		System.out.println("Loaded!");
+		train_steam_anim = new Animation();
+		train_steam_anim.loadAnimationFromSheet("images/train_steam.png",2,1,600);
+		train_steam_spr = new Sprite(train_steam_anim);
+		
+
+		Animation train_semaphore_anim = new Animation();
+		train_semaphore_anim.addFrame(loadImage("images/train_semaphore.png"), 200);
+		train_semaphore_spr = new Sprite(train_semaphore_anim);
+
+		long endLoad = System.currentTimeMillis() - startLoad;
+		System.out.println("Loaded in " + endLoad + " milliseconds!");
 
 
-		init_game(0);
+		opening();
+	}
+
+
+
+	public void opening() {
+		sun1.setX(screenWidth / 2);
+		sun1.setY(screenHeight / 2);
+		sun2.setX(screenWidth / 2);
+		sun2.setY(screenHeight / 2);
+		title.setX(-4096);
+		title.setY(0);
 	}
 
 
 	
-	public void init_game(int select) {
+	private void init_game(int select) {
+		cutscene = false;
+
 		win = false;
 		lose = false;
 		hp = 4;
 		
-		xPos = 0;
+		xOff = 0;
 		yPos = ZERO_BLOCKS;
 		jump_dx = 0;
 		indent = 448;
-		c = (indent + 64) * -1;
 		
 		mayGoLeft = true;
 		mayGoRight = true;
 		mayAscend = true;
-		
-		// Arranging protag's body parts
-		torso_spr.setX(indent);
-		torso_spr.setY(yPos - 128);
-		torso_spr.setAnimation(shife_anim);
-		larm_spr.setX(indent - 128);
-		larm_spr.setY(yPos - 128);
-		rarm_spr.setX(indent + 64);
-		rarm_spr.setY(yPos - 128);
-		legs_spr.setX(indent);
-		legs_spr.setY(yPos - 64);
 
 		// Initialising levels
 		if (select == 0) {
@@ -332,16 +376,29 @@ public class Game extends GameCore {
 			}	
 
 			piano_spr.setX(piano_left);		piano_spr.setY(THREE_BLOCKS);
-			balcony_spr.setX(33 * BLOCK); 		balcony_spr.setY(SIX_BLOCKS);
-			wall1_spr.setX(35 * BLOCK); 		wall1_spr.setY(SIX_BLOCKS);
-			wall2_spr.setX(35 * BLOCK); 		wall2_spr.setY(-128);
-			wall3_spr.setX(62 * BLOCK); 		wall3_spr.setY(SIX_BLOCKS);
 			handrail1_spr.setX((33 * BLOCK) + 16); 	handrail1_spr.setY(SEVEN_BLOCKS);
 			handrail2_spr.setX((39 * BLOCK) + 16); 	handrail2_spr.setY(SEVEN_BLOCKS);
 			branch1_spr.setX(BLOCK * 54); 		branch1_spr.setY(FOUR_BLOCKS);
 			branch2_spr.setX(BLOCK * 56); 		branch2_spr.setY(FIVE_BLOCKS);
-			screen_spr.setX(screen_left);
 
+			rifleman_spr.setX(rifleman_left);
+			rifleman_spr.rifleman_init();
+			rifleman2_spr.setX(rifleman2_left);
+			rifleman2_spr.rifleman_init();
+			screen_spr.setX(screen_left);
+			screen_spr.screen_init();
+
+			rifleman_spr.setY(512);
+			rifleman2_spr.setY(512);
+			screen_spr.setY(512);
+
+			rifleman_spr.reset();
+			rifleman2_spr.reset();
+			screen_spr.reset();
+
+			rifleman_spr.setTileMap(ballroom_collisions);
+			rifleman2_spr.setTileMap(ballroom_collisions);
+			screen_spr.setTileMap(ballroom_collisions);
 
 			// Starts the level's soundtrack
 			try { if (!musicPlaying) soundtrack(level); } catch (Exception e) { System.out.println("MIDI error!"); }
@@ -350,10 +407,41 @@ public class Game extends GameCore {
 
 			yPos = TWO_BLOCKS;
 
+			train_semaphore_spr.setX(-32);
+			train_semaphore_spr.setY(SIX_BLOCKS);
+			semaphore_incident = false;
+
+			train_steam_spr.setX(BLOCK * 5);
+			train_steam_spr.setY(0);
+
+			rifleman_spr.setX(rifleman_left);
+			rifleman_spr.rifleman_init();
+			rifleman2_spr.setX(rifleman2_left);
+			rifleman2_spr.rifleman_init();
+
+			rifleman_spr.setY(448);
+			rifleman2_spr.setY(448);
+			
+			rifleman_spr.reset();
+			rifleman2_spr.reset();
+
+			rifleman_spr.setTileMap(train_collisions);
+			rifleman2_spr.setTileMap(train_collisions);
+
 			// Starts the level's soundtrack
 			try { if (!musicPlaying) soundtrack(level); } catch (Exception e) { System.out.println("MIDI error!"); }
 		}
 		
+		// Arranging protag's body parts
+		torso_spr.setX(indent);
+		torso_spr.setY(yPos - 128);
+		torso_spr.setAnimation(shife_anim);
+		larm_spr.setX(indent - 128);
+		larm_spr.setY(yPos - 128);
+		rarm_spr.setX(indent + 64);
+		rarm_spr.setY(yPos - 128);
+		legs_spr.setX(indent);
+		legs_spr.setY(yPos - 64);
 	}
 
 
@@ -379,76 +467,112 @@ public class Game extends GameCore {
 		g.setColor(black);
 		g.fillRect(0,0,getWidth(),getHeight());
 		
+		if (cutscene) {
+			sun2.setRotation(sun2.getRotation() + sun2r);
+			sun2.setX(0);
+			sun2.setY(-192);
+			sun2.drawTransformed(g);
+			sun1.setRotation(sun1.getRotation() + sun1r);
+			sun1.setX(0);
+			sun1.setY(-192);
+			sun1.drawTransformed(g);
+			g.drawImage(studio, 258, 134, null);
+			g.drawImage(title.getImage(), (int) title.getX(), (int) title.getY(), null);
+
+			if (title.getX() >= 0) {
+				g.drawImage(subs_enter, 0, 0, null);
+			}
+
+			return;
+		} 
+
 		// Backgrounds
 		if (level == 0) { // Level select menu
 			// A picture representing each level
 			g.drawImage(select_ballroom, 0, 0, null);
 			g.drawImage(select_train, 512, 0, null);
+
+			if (torso_spr.getX() <= ((screenWidth / 2) - 64)) g.drawImage(subs_ballroom, 0, 0, null);
+			if (torso_spr.getX() >= ((screenWidth / 2) + 64)) g.drawImage(subs_train, 0, 0, null);
+
+
 		} else if (level == 1) { // Ballroom
-			g.drawImage(bg_ballroom, (-xPos / 32), 0, null);
-			g.fillRect((-xPos - 8),0,8,getHeight());
+			g.drawImage(bg_ballroom, (-xOff / 32), 0, null);
+			g.fillRect((-xOff - 8),0,8,getHeight());
 
 			// Tilemaps
-			ballroom_collisions.draw(g,-xPos,0);
-			ballroom_map.draw(g,-xPos,0);
+			ballroom_collisions.draw(g,-xOff,0);
+			ballroom_map.draw(g,-xOff,0);
 			
 			// Obstacles			
-			for (Sprite s: chandeliers) g.drawImage(s.getImage(), (int) s.getX() - xPos, (int) s.getY(), null);
-			for (Sprite s: chandelierTops) g.drawImage(s.getImage(), (int) s.getX() - xPos, (int) s.getY(), null);
+			for (Sprite s: chandeliers) g.drawImage(s.getImage(), (int) s.getX() - xOff, (int) s.getY(), null);
+			for (Sprite s: chandelierTops) g.drawImage(s.getImage(), (int) s.getX() - xOff, (int) s.getY(), null);
 
-			g.drawImage(piano_spr.getImage(), piano_left - xPos, THREE_BLOCKS, null);
-			g.drawImage(wall1_spr.getImage(), (int) wall1_spr.getX() - xPos, SIX_BLOCKS, null);
-			g.drawImage(wall2_spr.getImage(), (int) wall2_spr.getX() - xPos, -128, null);
-			g.drawImage(wall3_spr.getImage(), (int) wall3_spr.getX() - xPos, (int) wall3_spr.getY(), null);
-			g.drawImage(balcony_spr.getImage(), (int) balcony_spr.getX() - xPos, SIX_BLOCKS, null);
-			g.drawImage(handrail1_spr.getImage(), (int) handrail1_spr.getX() - xPos, (int) handrail1_spr.getY(), null);
-			g.drawImage(handrail2_spr.getImage(), (int) handrail2_spr.getX() - xPos, (int) handrail2_spr.getY(), null);
-			g.drawImage(branch1_spr.getImage(), (int) branch1_spr.getX() - xPos, (int) branch1_spr.getY(), null);
-			g.drawImage(branch2_spr.getImage(), (int) branch2_spr.getX() - xPos, (int) branch2_spr.getY(), null);
+			g.drawImage(monet, (piano_left + 32) - xOff, SIX_BLOCKS - 32, null);
+			g.drawImage(piano_spr.getImage(), piano_left - xOff, THREE_BLOCKS, null);
+			g.drawImage(handrail1_spr.getImage(), (int) handrail1_spr.getX() - xOff, (int) handrail1_spr.getY(), null);
+			g.drawImage(handrail2_spr.getImage(), (int) handrail2_spr.getX() - xOff, (int) handrail2_spr.getY(), null);
+			g.drawImage(branch1_spr.getImage(), (int) branch1_spr.getX() - xOff, (int) branch1_spr.getY(), null);
+			g.drawImage(branch2_spr.getImage(), (int) branch2_spr.getX() - xOff, (int) branch2_spr.getY(), null);
 		} else if (level == 2) { // Train
-			g.drawImage(bg_train, -(xPos / 64), 0, null);
+			g.drawImage(bg_train, -(xOff / 64), 0, null);
 
-			train_collisions.draw(g,-xPos, 0);
-			train_map.draw(g,-xPos, 0);
+			g.drawImage(train_semaphore_spr.getImage(), (int) train_semaphore_spr.getX(), (int) train_semaphore_spr.getY(), null); // a rare sprite behind the tilemap
+			
+			g.drawImage(train_steam_spr.getImage(), (int) train_steam_spr.getX() - xOff, (int) train_steam_spr.getY(), null);
+
+			train_collisions.draw(g,-xOff, 0);
+			train_map.draw(g,-xOff, 0);
 			tracks_map.draw(g,0,0);
+
 		}
 
 
 		// Player
 		if (!lose) {
+			torso_spr.setY(yPos - 128);
+			larm_spr.setY(yPos - 128);
+			rarm_spr.setY(yPos - 128);
+
 			g.drawImage(torso_spr.getImage(), (int) torso_spr.getX(), (int) torso_spr.getY(), null);
 			if (attackl && mayGoLeft) g.drawImage(larm_spr.getImage(), (int) larm_spr.getX(), (int) larm_spr.getY(), null);
 			if (attackr && mayGoRight) g.drawImage(rarm_spr.getImage(), (int) rarm_spr.getX(), (int) rarm_spr.getY(), null);
-	
-	
+			
+			// Legs are the most complicated to animate: the movements convey speed, heading, jumping and game over statuses.	
 			if (run) { 
 				legs_anim.setAnimationSpeed(2);
 			} else {
 				legs_anim.setAnimationSpeed(1);
 			}
 			
-			if (goLeft) {
+			if (jump_dx > 0 && mayDescend) {
+				legs_spr.setAnimation(legs_jump_anim);
+				if (goLeft) {
+					legs_spr.setScale(-1.0f, 1.0f);
+					legs_spr.setY(yPos - 64);
+					legs_spr.drawTransformed(g);
+				} else {
+					legs_spr.setScale(1.0f, 1.0f);
+					legs_spr.setY(yPos - 64);
+					legs_spr.drawTransformed(g);	
+				}
+			} else if (goLeft) {
 				legs_spr.setAnimation(legs_anim);
 				legs_spr.setScale(-1.0f, 1.0f);
-				legs_spr.setX(indent);
 				legs_spr.setY(yPos - 64);
 				legs_spr.drawTransformed(g);
 			} else if (goRight) {
 				legs_spr.setAnimation(legs_anim);
 				legs_spr.setScale(1.0f, 1.0f);
-				legs_spr.setX(indent);
 				legs_spr.setY(yPos - 64);
 				legs_spr.drawTransformed(g);
-			} else if (jump_dx > 0 && mayDescend) {
-				legs_spr.setAnimation(legs_jump_anim);
-				g.drawImage(legs_spr.getImage(), indent, (yPos - 64), null);
 			} else {
 				legs_spr.setAnimation(legs_idle_anim);
-				g.drawImage(legs_spr.getImage(), indent, (yPos - 64), null);
+				g.drawImage(legs_spr.getImage(), (int) legs_spr.getX(), (int) (yPos - 64), null);
 			}
 		} else {
 			legs_spr.setAnimation(down_anim);
-			g.drawImage(legs_spr.getImage(), indent, (yPos - 64), null);
+			g.drawImage(legs_spr.getImage(), (int) legs_spr.getX(), (int) (yPos - 64), null);
 		}
 
 
@@ -456,11 +580,13 @@ public class Game extends GameCore {
 		// Foregrounds i.e. things to stick your sword into
 		if (level == 1) {	
 			if (!screen_spr.getStatus()) {
-				g.drawImage(screen_spr.getImage(), screen_left - xPos, TWO_BLOCKS, null);
-			}
-			
+				g.drawImage(screen_spr.getImage(), screen_left - xOff, TWO_BLOCKS, null);
+			}	
+		}
+
+		if ((level == 1) || (level == 2)) {
 			if (!rifleman_spr.getStatus()) {
-				rifleman_spr.setX(rifleman1_left - xPos + rifleman_spr.getOwnMovement());
+				rifleman_spr.setX(rifleman_left - xOff + rifleman_spr.getOwnMovement());
 				if (torso_spr.getX() < rifleman_spr.getX()) {
 					g.drawImage(rifleman_spr.getImage(), (int) rifleman_spr.getX(), (int) rifleman_spr.getY(), null);
 				} else {
@@ -470,7 +596,7 @@ public class Game extends GameCore {
 			}
 			
 			if (!rifleman2_spr.getStatus()) {
-				rifleman2_spr.setX(rifleman2_left - xPos + rifleman2_spr.getOwnMovement());
+				rifleman2_spr.setX(rifleman2_left - xOff + rifleman2_spr.getOwnMovement());
 				if (torso_spr.getX() < rifleman2_spr.getX()) {
 					g.drawImage(rifleman2_spr.getImage(), (int) rifleman2_spr.getX(), (int) rifleman2_spr.getY(), null);
 				} else {
@@ -485,6 +611,7 @@ public class Game extends GameCore {
 		// Front: overlays
 		if (win || lose) {
 			Image owari = new ImageIcon("images/sub_owari.png").getImage();
+			g.drawImage(fadeout.getImage(), 0, 0, null);
 			g.drawImage(owari, 0, 0, null);
 		}
 	}
@@ -494,6 +621,12 @@ public class Game extends GameCore {
 	public void update(long elapsed) {
 		elapsed++;
 		debug();
+
+		if (cutscene) {
+			if (title.getX() < 0) title.shiftX(25);
+			if (title.getX() > 0) title.setX(0);
+			return;
+		}
 
 		if (level == 1) {
 			thisLevel = ballroom_map;
@@ -506,129 +639,139 @@ public class Game extends GameCore {
 
 		// Movement
 
-	
-		
 		// You can't move when the game is over (primitive cutscenes) and movement works differently on level 0, the single-screen menu.
 		if (!isTheGameOver() && level != 0) {
 			rightmost = thisLevel.getPixelWidth() - screenWidth;
 
 			// Reaching the extremes of the level.  Of course, the start treats you differently compared to the goal.
-			if (indent <= leftmost) {
+			if (torso_spr.getX() <= leftmost) {
 				mayGoLeft = false;
 			} else {
 				mayGoLeft = true;
 			}
-			if (xPos >= rightmost) win();
+			if (xOff >= rightmost) win();
 
 			if (mayGoLeft) {
-				if ((xPos < 0) || (indent > THREE_BLOCKS)) { // The protag is approaching the left side of the screen; he will move, not scroll the world.
+				if ((xOff < 0) || (torso_spr.getX() > THREE_BLOCKS)) { // The protag is approaching the left side of the screen; he will move, not scroll the world.
 					if (goLeft && !run) {
-						indent -= WALK_SPEED;
 						torso_spr.shiftX(-WALK_SPEED);
 						larm_spr.shiftX(-WALK_SPEED);
 						rarm_spr.shiftX(-WALK_SPEED);
+						legs_spr.shiftX(-WALK_SPEED);
 					}
 					if (goLeft && run) {
-						indent -= RUN_SPEED;
 						torso_spr.shiftX(-RUN_SPEED);
 						larm_spr.shiftX(-RUN_SPEED);
 						rarm_spr.shiftX(-RUN_SPEED);
+						legs_spr.shiftX(-RUN_SPEED);
 					}
 				} else { // Ordinary world scrolling.
-					if (goLeft && !run) xPos -= WALK_SPEED;
-					if (goLeft && run)  xPos -= RUN_SPEED;
+					if (goLeft && !run) xOff -= WALK_SPEED;
+					if (goLeft && run)  xOff -= RUN_SPEED;
 				}
 			}
 
 			if (mayGoRight) {
-				if (indent < THREE_BLOCKS) {
+				if (torso_spr.getX() < THREE_BLOCKS) {
 					if (goRight && !run) {
-						indent += WALK_SPEED;
 						torso_spr.shiftX(WALK_SPEED);
 						larm_spr.shiftX(WALK_SPEED);
 						rarm_spr.shiftX(WALK_SPEED);
+						legs_spr.shiftX(WALK_SPEED);
 					}
 					if (goRight && run) {
-						indent += RUN_SPEED;
 						torso_spr.shiftX(RUN_SPEED);
 						larm_spr.shiftX(RUN_SPEED);
 						rarm_spr.shiftX(RUN_SPEED);
+						legs_spr.shiftX(RUN_SPEED);
 					}
 				} else { 
-					if (goRight && !run) xPos += WALK_SPEED;
-					if (goRight && run)  xPos += RUN_SPEED;
+					if (goRight && !run) xOff += WALK_SPEED;
+					if (goRight && run)  xOff += RUN_SPEED;
 				}
 			}
 	
 			if ((jump) && (yPos % 64 == 0)) { // Not a safe way of doing things..
 				jump_dx = 40;
 				mayDescend = true;
-			}
-	
-			if (mayDescend) {
-				yPos -= jump_dx;
-				torso_spr.shiftY(-jump_dx);
-				larm_spr.shiftY(-jump_dx);
-				rarm_spr.shiftY(-jump_dx);
-				jump_dx -= WEIGHT;
-			} else {
-				jump_dx = 0;
-			}
+			}	
 		}
 
+		
 		// Movement within the level selection screen is limited.
 		if (level == 0) {
 			if (mayGoLeft) {
 				if (goLeft && !run) {
-					indent = indent - WALK_SPEED;
+					torso_spr.shiftX(-WALK_SPEED);
+					legs_spr.shiftX(-WALK_SPEED);
+					larm_spr.shiftX(-WALK_SPEED);
+					rarm_spr.shiftX(-WALK_SPEED);
 				}
 				if (goLeft && run) {
-					indent = indent - RUN_SPEED;
+					torso_spr.shiftX(-RUN_SPEED);
+					legs_spr.shiftX(-RUN_SPEED);
+					larm_spr.shiftX(-RUN_SPEED);
+					rarm_spr.shiftX(-RUN_SPEED);
 				}
 			}
 			
 			if (mayGoRight) {
 				if (goRight && !run) {
-					indent = indent + WALK_SPEED;
+					torso_spr.shiftX(WALK_SPEED);
+					legs_spr.shiftX(WALK_SPEED);
+					larm_spr.shiftX(WALK_SPEED);
+					rarm_spr.shiftX(WALK_SPEED);
 				}
 				if (goRight && run) {	
-					indent = indent + RUN_SPEED;
+					torso_spr.shiftX(RUN_SPEED);
+					legs_spr.shiftX(RUN_SPEED);
+					larm_spr.shiftX(RUN_SPEED);
+					rarm_spr.shiftX(RUN_SPEED);
 				}
 			}
 
-			torso_spr.setX(indent);
-			legs_spr.setX(indent);
-			larm_spr.setX(indent - 128);
-			rarm_spr.setX(indent + 64);
-
-			if (indent <= 192) init_game(1);
-			if (indent >= (screenWidth - 192)) init_game(2);
+			if (torso_spr.getX() <= 192) init_game(1);
+			if (torso_spr.getX() >= (screenWidth - 192)) init_game(2);
 		}
 
+
+		if (mayDescend && level != 0) {
+			yPos -= jump_dx;
+			torso_spr.shiftY(-jump_dx);
+			larm_spr.shiftY(-jump_dx);
+			rarm_spr.shiftY(-jump_dx);
+			legs_spr.shiftY(-jump_dx);
+			jump_dx -= WEIGHT;
+		} else {
+			jump_dx = 0;
+		}
 
 
 		// When you win, the protag runs off the screen on his own.
 		if (win) {
-			indent = indent + RUN_SPEED;
 			torso_spr.shiftX(RUN_SPEED);
 			larm_spr.shiftX(RUN_SPEED);
 			rarm_spr.shiftX(RUN_SPEED);
+			legs_spr.shiftX(RUN_SPEED);
 		}
 
 	
 
 		// Enemy AI
+		
 		if (level == 1) {
+			screen_spr.getGot(xOff + torso_spr.getX(), yPos, attackl, attackr);
+		}
+
+
+		if ((!lose) && ((level == 1) || (level == 2))) {
 			// The enemy attacks when he's within two screen widths of the player, whether approaching from the left or the right.
 			if ((Math.abs(torso_spr.getX() - rifleman_spr.getX())) < (screenWidth * 2)) rifleman_spr.attackChassepot(torso_spr.getX(), (float) yPos);
 			if ((Math.abs(torso_spr.getX() - rifleman2_spr.getX())) < (screenWidth * 2)) rifleman2_spr.attackChassepot(torso_spr.getX(), (float) yPos);
 		
 			// Checks for attacks by the player: the player's position and whether the attack was from the left or the right.
-			rifleman_spr.getGot(torso_spr.getX(), (float) yPos, attackl, attackr);
-			rifleman2_spr.getGot(torso_spr.getX(), (float) yPos, attackl, attackr);
-			screen_spr.getGot(xPos + indent, (float) yPos, attackl, attackr);
-			System.out.println("Screen X: " + screen_spr.getX());
-			System.out.println("xPos: " + xPos);
+			rifleman_spr.getGot(torso_spr.getX(), yPos, attackl, attackr);
+			rifleman2_spr.getGot(torso_spr.getX(), yPos, attackl, attackr);
 
 			// Checks for the protag having been attacked.
 			if (rifleman_spr.didYouHitMe()) {
@@ -653,10 +796,6 @@ public class Game extends GameCore {
 			}
 
 			collision(piano_spr, false);
-			collision(balcony_spr, true);
-			collision(wall1_spr, true);
-			collision(wall2_spr, true);
-			collision(wall3_spr, false);
 			collision(handrail1_spr, false);
 			collision(handrail2_spr, false);
 			if (!screen_spr.getStatus()) collision(screen_spr, false);
@@ -668,34 +807,49 @@ public class Game extends GameCore {
 
 		if (level == 2) {
 			checkTileCollision(legs_spr, train_collisions);
-		}
+			
+			if (semaphore_incident) {
+				float sem_left;
+				float sem_right;
+		
+				train_semaphore_spr.shiftX(20);
+			
+				sem_left = train_semaphore_spr.getX();
+				sem_right = sem_left + 32;
 
+				// This sprite needs its own collision detection because it uses a more prosaic system, "where on the screen am i"	
+				if ((torso_spr.getX() > sem_left) && (torso_spr.getX() < sem_right) && (yPos < THREE_BLOCKS) && yPos > FIVE_BLOCKS) lose();
+				if ((train_semaphore_spr.getX() > screenWidth + 2048) && !lose) semaphore_incident = false;
+			}
+		}
 	
 		// Update animations
-		shife_anim.update(elapsed);
-		legs_idle_anim.update(elapsed);
-		legs_jump_anim.update(elapsed);
-		legs_anim.update(elapsed);
+		torso_spr.getAnimation().update(elapsed);
+		legs_spr.getAnimation().update(elapsed);
 		
-		if (level == 1) {
+		if ((level == 1) || (level == 2)) {
 			if (!rifleman_spr.getStatus()) rifleman_spr.update(elapsed);
 			if (!rifleman2_spr.getStatus()) rifleman2_spr.update(elapsed);
 		}
+
+		if (level == 2) train_steam_anim.update(elapsed);
+		if (win || lose) fadeouta.update(elapsed);
 	}
 
 
 
-	public void collision(Sprite spr, boolean hasBottom) {
+	public boolean collision(Sprite spr, boolean hasBottom) {
 
-		int left = (int) spr.getX() + c; // getX() matches xPos when the sprite is on the left edge of the screen.  c accounts for this.
-		int right = left + spr.getImage().getWidth(null) + BLOCK; // the extra block is the protag's breadth; checks his left side, not his right.
-		int top = (int) spr.getY();
-		int bottom = top + spr.getImage().getHeight(null) + (BLOCK * 2);
+		float left = spr.getX() - (torso_spr.getX() + BLOCK); // getX() matches xOff when the sprite is on the left edge of the screen.  torso, etc. brings it to the player's location.
+		float right = left + spr.getImage().getWidth(null) + BLOCK; // the extra block is the protag's breadth; checks his left side, not his right.
+		float top = spr.getY();
+		float bottom = top + spr.getImage().getHeight(null) + (BLOCK * 2);
 
 		boolean inX;
 		boolean inY;
+		boolean collided = false;
 
-		if ((xPos > left) && (xPos < right)) {
+		if ((xOff > left) && (xOff < right)) {
 			inX = true;
 		} else {
 			inX = false;
@@ -708,15 +862,17 @@ public class Game extends GameCore {
 		}
 		
 		// If the object is completely missed, freedom and a hasty return
-		if (xPos < left    || !inY) mayGoRight = true;
-		if (xPos > right   || !inY) mayGoLeft = true;
+		if (xOff < left    || !inY) mayGoRight = true;
+		if (xOff > right   || !inY) mayGoLeft = true;
 		if (yPos < top    || !inX) mayDescend = true;
 		if ((yPos > bottom || !inX) || !hasBottom) mayAscend = true;
-		if (!inX && !inY) return;
+		if (!inX && !inY) return false;
 
 		if ((inX) && (yPos > bottom - 48) && (yPos <= bottom) && hasBottom) { // bumping the bottom with your head a la a ? block
-			int distL = xPos - left;
-			int distR = right - xPos;
+			collided = true;
+
+			float distL = (float) xOff - left;
+			float distR = right - (float) xOff;
 
 			// Which edge of the rectangle is closest to the player?
 			// Move the player to whichever edge, and disable colliding further.
@@ -729,15 +885,14 @@ public class Game extends GameCore {
 				jump_dx = 0;
 				mayAscend = false;
 			} else if (distL < distR) {
-				xPos = left;
+				if (xOff >= 0) xOff = (int) left;
 				mayGoRight = false;
 			} else if (distR < distL) {
-				xPos = right;
+				xOff = (int) right;
 				mayGoLeft = false;
 			}
 		} else if ((inX) && (yPos == top)) { // landing on top or walking onto the top
-			//floor = top;
-			yPos = top;//floor;
+			yPos = top;
 			jump = false;
 			torso_spr.setY(top - (BLOCK * 2));
 			larm_spr.setY(top - (BLOCK * 2));
@@ -745,27 +900,25 @@ public class Game extends GameCore {
 			jump_dx = 0;
 			mayDescend = false;
 		} else if ((inX) && (inY)) { // simply ending up inside somehow
+			collided = true;
+
 			//jump_dx = 0;
-			int distL = xPos - left;
-			int distR = right - xPos;
-			int distT = yPos - top;
-			int distB = bottom - yPos;
+			float distL = (float) xOff - left;
+			float distR = right - (float) xOff;
+			float distT = yPos - top;
+			float distB = bottom - yPos;
 
 			// Which edge of the rectangle is closest to the player?
 			// Move the player to whichever edge, and disable colliding further.
 			if ((distL < distR) && (distL < distT) && (distL < distB)) {  // towards the left
-				xPos = left;
+				if (xOff >= 0) xOff = (int) left;
 				mayGoRight = false;
 			} else if ((distR < distL) && (distR < distT) && (distR < distB)) { // towards the right
-				xPos = right;
+				xOff = (int) right;
 				mayGoLeft = false;
 			} else if ((distT < distL) && (distT < distR) && (distT < distB)) { // towards the top
-				//floor = top;
-				yPos = top;//floor;
+				yPos = top;
 				jump = false;
-				torso_spr.setY(top - (BLOCK * 2));
-				larm_spr.setY(top - (BLOCK * 2));
-				rarm_spr.setY(top - (BLOCK * 2));
 				jump_dx = 0;
 				mayDescend = false;
 
@@ -773,107 +926,116 @@ public class Game extends GameCore {
 				land.start();
 			} else if ((distB < distL) && (distB < distR) && (distB < distT) && hasBottom) { // towards the bottom
 				yPos = bottom;
-				torso_spr.setY(bottom - TWO_BLOCKS);
-				larm_spr.setY(bottom - TWO_BLOCKS);
-				rarm_spr.setY(bottom - TWO_BLOCKS);
 				jump = false;
 				jump_dx = 0;
 				mayAscend = false;
 			}
 		}
 
-		if ((xPos <= left + 10) || (xPos >= right - 10)) { // allows for sliding down the edge of the sprite
-			//floor = ZERO_BLOCKS;
+		if ((xOff <= left + 10) || (xOff >= right - 10)) { // allows for sliding down the edge of the sprite
 			mayDescend = true;
 		}
 
+		return collided;
 	}
 
 
-
+	/**
+	 *  Checks tile collisions, corner by corner, and responds to them.
+	 *  @param Sprite s.  Designed to suit both the player character and enemies.
+	 *  @param TileMap tmap.  The special version of the level with collision data.
+	 */
 	public void checkTileCollision(Sprite s, TileMap tmap) {
-	/*	// Take a note of a sprite's current position
-    		
-   	 	// Divide the sprite’s x coordinate by the width of a tile, to get
-    		// the number of tiles across the x axis that the sprite is positioned at 
-    		int	xtile = (int)(sx / tileWidth);
-    		// The same applies to the y coordinate
-    		int ytile = (int)(sy / tileHeight);
-    	
-    		// What tile character is at the top left of the sprite s?
-    		char ch = tmap.getTileChar(xtile, ytile);
-
-		sy = yPos; // Bottom...
-    		xtile = (int)(sx / tileWidth); // ... left
-    		ytile = (int)((sy / tileHeight));
-    		ch = tmap.getTileChar(xtile, ytile);
-
-     		if (ch != '.') {
-			floor = ytile * 64;
-		}
-		*/
-	
-
        	 	// Find out how wide and how tall a tile is
-		float tileWidth = tmap.getTileWidth();
-       		float tileHeight = tmap.getTileHeight();
-       	 
+		int tileWidth = tmap.getTileWidth();
+       		int tileHeight = tmap.getTileHeight(); 
 
-		// Edges of the protag's body
-		int left = (xPos + indent);
-		int bottom = yPos;
+		// Edges of the body
+		int left = (xOff + (int) s.getX());
+		int bottom = (int) yPos;
 
-		int left_tile = (left / (int) tileWidth);
+		int left_tile = (left / tileWidth);
 		int right_tile = left_tile + 1;
-		int bottom_tile = (bottom / (int) tileHeight);
+		int bottom_tile = (bottom / tileHeight);
 		int top_tile = bottom_tile - 2;
 
-       	 	// the number of tiles across the axes that the sprite is positioned at 
-        	//int xtile = (int)(sx / tileWidth);
-        	///int ytile = (int)(sy / tileHeight);
-        	
 		char tl = tmap.getTileChar(left_tile, top_tile);
 		char tr = tmap.getTileChar(right_tile, top_tile);
 		char bl = tmap.getTileChar(right_tile, bottom_tile);
 		char br = tmap.getTileChar(right_tile, bottom_tile);
-		//char ch = tmap.getTileChar(xtile, ytile); // which tile is at the top left ?
         
-		System.out.println(left + ", " + left_tile + "    " + bottom_tile);
-		System.out.println(bl + " " + br);
-        	
-		if (bl != '.') {
+		if ((tl == '.') && (tr == '.') && (bl == '.') && (br == '.')) {
+			mayGoRight = true;
+			mayGoLeft = true;
+			mayAscend = true;
+			mayDescend = true;
+			return;
+		}
+
+		if ((tl == '?') || (tr == '?') || (bl == '?') || (br == '?')) { // don't want us to get stuck above the screen
+			mayDescend = true;
+			return;
+		}
+		
+		if ((tl == 's') || (tr == 's') || (bl == 's') || (br == 's')) { // spawn a girder.  Won't prevent movement
+			if (!semaphore_incident) semaphoreIncident();
+			tmap.setTileChar('.', top_tile, bottom_tile);
+		}
+		
+		if (((tr == 'y') && (br == 'y')) || ((tr == 'Y') || (br == 'Y'))) { // at the left
+			if (goRight) {
+				if (run) xOff -= RUN_SPEED;
+				if (!run) xOff -= WALK_SPEED;
+			}
+			mayGoRight = false;
+			mayDescend = true;
+		} else mayGoRight = true;
+
+		if (((tl == 'y') && (bl == 'y')) || ((tl == 'Y') || (bl == 'Y'))) { // at the right
+			if (goLeft) {
+				if (run) xOff += RUN_SPEED;
+				if (!run) xOff += WALK_SPEED;
+			}
+			mayGoLeft = false;
+			mayDescend = true;
+		} else mayGoLeft = true;
+
+		if (((tl == 'y') && (tr == 'y')) || ((tl == 'Y') || (tr == 'Y'))) { // at the bottom
+			yPos = (top_tile + 3) * 64;
+			jump = false;
+			jump_dx = 0;
+			mayAscend = false;
+		} else mayAscend = true;
+
+
+		if (((bl == 'y') && (br == 'y')) || ((bl == 'Y') || (br == 'Y'))) { // at the top
 			yPos = bottom_tile * 64;
-			torso_spr.setY(yPos - (BLOCK * 2));
-			larm_spr.setY(yPos - (BLOCK * 2));
-			rarm_spr.setY(yPos - (BLOCK * 2));
 			mayDescend = false;
 			jump = false;
 		} else mayDescend = true;
-        
-        	
-        	// bottom left
-        	//xtile = (int)(sx / tileWidth);
-        	//ytile = (int)((sy + s.getHeight())/ tileHeight);
-        	//ch = tmap.getTileChar(xtile, ytile);
-        
-        	// If it's not empty space
-        	//if (ch != '.') 
-        	//{
-		//	System.out.println("bottom left");
-        	//}
-
-		//if (ch == '.') mayDescend = true;
-
    	 }
 
 
 
+	/**
+	 * A little extra scene of the protag getting bonked with a girder
+	 */
+	private void semaphoreIncident() {
+		train_semaphore_spr.setX(-32);
+		semaphore_incident = true;
+	}
+
+
+
 	public void keyPressed(KeyEvent e) { 
+
+		if (e.getKeyCode() == KeyEvent.VK_ENTER) init_game(0);
+
 		// Movement
 		if (e.getKeyCode() == KeyEvent.VK_A) goLeft = true;
 		if (e.getKeyCode() == KeyEvent.VK_D) goRight = true;
 		if (e.isShiftDown()) run = true;
-		if (e.getKeyCode() == KeyEvent.VK_SPACE) jump = true; 
+		if (e.getKeyCode() == KeyEvent.VK_SPACE) jump = true;
 	
 		// Combat
 		if ((e.getKeyCode() == KeyEvent.VK_H) && (!attackl) && (!attackr)) attackl = true;
@@ -927,9 +1089,14 @@ public class Game extends GameCore {
 
 	public void win() {
 		win = true;
+	
+		fadeout = new Sprite(fadeouta);
+		fadeouta.start();
+		fadeouta.setLoop(false);
+
 		mayGoLeft = false;
 		mayGoRight = false;
-		mayAscend = true;
+		mayDescend = true;
 		rifleman_spr.kill();
 		rifleman2_spr.kill();
 	}
@@ -937,6 +1104,13 @@ public class Game extends GameCore {
 	public void lose() {
 		lose = true;
 
+		Sound shot = new Sound("sound/shot.wav");
+		shot.start();
+		
+		fadeout = new Sprite(fadeouta);
+		fadeouta.start();
+		fadeouta.setLoop(false);
+		
 		mayGoRight = false;
 		mayGoLeft = false;
 		mayAscend = false;

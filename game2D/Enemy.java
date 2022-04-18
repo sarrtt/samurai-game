@@ -22,6 +22,7 @@ public class Enemy extends Sprite {
 	boolean aiming = false;
 	boolean hit = false;
 	float deadlyY;
+	int speed;
 	int reloadRate; // used in a modulo operation
 
 	Image cr_sh;
@@ -40,11 +41,14 @@ public class Enemy extends Sprite {
 	Sound gunmiss;
 	boolean die_sound_playing = false;
 
-	TileMap rokumeikan = new TileMap();
+	TileMap mytmap;
 
 	boolean crouching = false;
 	boolean gotten = false;
 	boolean dead = false;
+
+	boolean mayGoLeft = true;
+	boolean mayGoRight = true;
 
 
 
@@ -59,7 +63,6 @@ public class Enemy extends Sprite {
 	
 	
 	public void rifleman_load () {
-		rokumeikan.loadMap("maps", "rokumeikan.txt");
 		stand_anim = new Animation();
 		crouch_anim = new Animation();
 		gotten_anim = new Animation();
@@ -70,19 +73,34 @@ public class Enemy extends Sprite {
 		gotten_anim.loadAnimationFromSheet("images/rifleman_damage.png",1,1,400);
 		shoot_stand_anim.loadAnimationFromSheet("images/rifleman_shoot_stand.png", 2, 1, 400);
 		shoot_crouch_anim.loadAnimationFromSheet("images/rifleman_shoot_crouch.png", 2, 1, 400);
+	}
 
+	public void rifleman_init() {
+		dead = false;
+
+		setAnimation(stand_anim);
 		health = 10;
 		range = (int) (Math.random() * 4 + 2) * 64;
 		reloadRate = (int) (Math.random() * 75 + 50);
-		setVelocityX((float) (Math.random() * 13 + 7));
-		setY(512);
+		ownMovement = 0;
+
+		show();
+
+		speed = ((int) (Math.random() * 15 + 7));
+		setVelocityX(speed);
 	}
+
+
 
 	public void screen_load () {
 		screen_anim = new Animation();
 		screen_torn_anim = new Animation();
 		screen_anim.loadAnimationFromSheet("images/ballroom_screen.png",1,1,200);
-		screen_torn_anim.loadAnimationFromSheet("images/ballroom_screen_damage.png",1,1,200);
+		screen_torn_anim.loadAnimationFromSheet("images/ballroom_screen_damage.png",1,1,200);	
+	}
+
+	public void screen_init() {
+		dead = false;
 		
 		setAnimation(screen_anim);
 		health = 3;
@@ -98,11 +116,11 @@ public class Enemy extends Sprite {
 			if (getX() > targetX + range) {
 				ready = false;
 				stand_anim.play();
-				ownMovement = ownMovement - 5;
+				if (mayGoLeft) ownMovement = ownMovement - 5;
 			} else if ((getX() < targetX - range)) {
 				ready = false;
 				stand_anim.play();
-				ownMovement = ownMovement + 5;
+				if (mayGoRight) ownMovement = ownMovement + 5;
 			} else {
 				stand_anim.pauseAt(1);
 				ready = true;
@@ -170,8 +188,6 @@ public class Enemy extends Sprite {
 	
 	
 	public void getGot(float targetX, float targetY, boolean fromRight, boolean fromLeft) {
-		//if (dead) return;
-
 		if (targetY < getY()) return;
 
 		int leftTip = (int) targetX - 128;
@@ -262,10 +278,61 @@ public class Enemy extends Sprite {
 			}
 			//hide();
 		}
+
+		checkTileCollision(mytmap);
 	}
+
+
+	public void checkTileCollision(TileMap mytmap) {
+       	 	// Find out how wide and how tall a tile is
+		int tileWidth = mytmap.getTileWidth();
+       		int tileHeight = mytmap.getTileHeight(); 
+
+		// Edges of the body
+		int left = (int) getX();
+		int bottom = (int) getY() + getHeight();
+
+		int left_tile = (left / tileWidth);
+		int right_tile = left_tile + 1;
+		int bottom_tile = (bottom / tileHeight);
+		int top_tile = bottom_tile - 2;
+
+		char tl = mytmap.getTileChar(left_tile, top_tile);
+		char tr = mytmap.getTileChar(right_tile, top_tile);
+		char bl = mytmap.getTileChar(right_tile, bottom_tile);
+		char br = mytmap.getTileChar(right_tile, bottom_tile);
+        
+		if ((tl == '.') && (tr == '.') && (bl == '.') && (br == '.')) {
+			mayGoRight = true;
+			mayGoLeft = true;
+			return;
+		}
+
+		if (((tr != '.') && (br != '.')) || ((tr == 'Y') || (br == 'Y'))) { // at the left
+			mayGoRight = false;
+			//ownMovement = ownMovement * -1;
+		} else mayGoRight = true;
+
+		if (((tl != '.') && (bl != '.')) || ((tl == 'Y') || (bl == 'Y'))) { // at the right
+			mayGoLeft = false;
+			//ownMovement = ownMovement * -1;
+		} else mayGoLeft = true;
+   	 }
+
+
 
 	public int getOwnMovement() {
 		return ownMovement;
+	}
+
+	public void setTileMap(TileMap tmap) {
+		mytmap = tmap;
+	}
+
+
+	public void reset() {
+		if (type.equals("rifleman")) rifleman_init();
+		if (type.equals("screen")) screen_init();
 	}
 
 
