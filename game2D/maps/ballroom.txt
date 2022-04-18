@@ -1,0 +1,47 @@
+76 12 64 64
+// The first line should contain the width and height of the
+// map and the width and height of each tile. A list of character to
+// tile mappings is then provided where each character is preceded by a
+// # character. The dot character always defaults to a blank space 
+// Note that the referenced files should be in the same directory as the
+// tile map.
+#a=ballroom_carpet.png
+#b=ballroom_brick.png
+#B=ballroom_brick_dark.png
+#c=ballroom_frame_L_top.png
+#C=ballroom_frame_R_top.png
+#d=ballroom_doorway.png
+#g=garden_grass.png
+#h=ballroom_handrails.png
+#H=ballroom_handrails_dark.png
+#k=ballroom_skirting.png
+#l=ballroom_frame_L.png
+#L=ballroom_frame_L_bottom.png
+#p=ballroom_arch1.png
+#P=ballroom_arch2.png
+#q=ballroom_arch3.png
+#Q=garden_bark.png
+#r=ballroom_frame_R.png
+#R=ballroom_frame_R_bottom.png
+#s=garden_stone.png
+#S=garden_bush.png
+#t=ballroom_tiles.png
+#T=ballroom_frame_top.png
+#w=ballroom_wallpaper.png
+#y=ballroom_balcony.png
+// The actual tile map is preceded by the #map line
+#map
+bwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwbBBBrpPqpPqp....SSSSSSSSS...........Q.SSQ
+bwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwBBBBrbBBbBBb.....SSSSSSS............Q..SQ
+bwcTTTCwwcTTTCwwwwcTTTCwwcTTTCwwwwwBBBBrbBBbBBb........Q............SSSSS.QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBRbHHbHHb........Q.............SSS..QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwTTTTTTCyyyyyyy........Q......bb......Q...QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrpPqpPqp........Q......bb......Q...QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwbBBBrbBBbBBb........Q......bb......Q...QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBrbBBbBBb........Q......bb......Q...QQ
+bwl...rwwl...rwwwwl...rwwl...rwwwwwBBBBrbBBbBBb..SS....QSS....bb......Q...QQ
+bkLhhhRkkLhhhRkkkkLhhhRkkLhhhRkkkkkkBBBRbHHbHHb..SS....QSS....bb......Q...QQ
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggggggggggggggg
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaadttttgggggggggggggggggggggggggggggggggggg
+
+
